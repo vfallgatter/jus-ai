@@ -1,0 +1,75 @@
+import { NextResponse } from 'next/server';
+import { GoogleGenAI } from '@google/genai';
+import fs from 'fs';
+import path from 'path';
+
+// Inicializa a API do Gemini
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+
+export async function POST(req: Request) {
+  try {
+    const { messages } = await req.json();
+    const latestMessage = messages[messages.length - 1].content;
+
+    // Caminho da pasta onde estão os PDFs das aulas
+    const pdfsDirectory = path.join(process.cwd(), 'aulas_pdf');
+    
+    if (!fs.existsSync(pdfsDirectory)) {
+      return NextResponse.json(
+        { error: 'A pasta "aulas_pdf" não foi encontrada na raiz do projeto.' },
+        { status: 500 }
+      );
+    }
+
+    const filenames = fs.readdirSync(pdfsDirectory);
+    
+    // Lista de conteúdos que vamos enviar para a API (Mensagem + Arquivos)
+    const contents: any[] = [];
+
+    // Loop para ler os PDFs e converter para o formato que o Gemini aceita nativamente (Inline Data)
+    for (const filename of filenames) {
+      if (filename.endsWith('.pdf')) {
+        const filePath = path.join(pdfsDirectory, filename);
+        const dataBuffer = fs.readFileSync(filePath);
+        
+        // Converte o arquivo PDF em Base64 para enviar direto na chamada da API
+        contents.push({
+          inlineData: {
+            data: dataBuffer.toString('base64'),
+            mimeType: 'application/pdf'
+          }
+        });
+      }
+    }
+
+    // Adiciona a pergunta atual do aluno no final do array de conteúdos
+    contents.push(latestMessage);
+
+    // O prompt do sistema que molda o comportamento do robô
+    const systemInstruction = `
+      Você é o Jus.ai, um assistente de inteligência artificial especializado em Direito Civil, treinado especificamente com os materiais de aula fornecidos em anexo.
+      Seu público-alvo são estudantes de direito da mesma turma.
+      
+      Regras estritas de resposta:
+      1. Responda de forma didática, precisa e estritamente jurídica, baseando-se nos PDFs anexados.
+      2. REQUISITO OBRIGATÓRIO: Ao responder ou explicar qualquer conceito, você DEVE citar de qual assunto ou slide do material você retirou a informação.
+      3. Use formatação Markdown (negritos, listas, títulos) para que a resposta fique bonita e fácil de ler em um chatbox.
+      4. Se o aluno fizer uma pergunta sobre algo que NÃO está nos PDFs anexados, responda com o seu conhecimento geral de Direito Civil, mas avise claramente: "(Nota: Este assunto específico não foi detalhado nos arquivos das aulas)".
+    `;
+
+    // Chama o modelo Gemini 2.5 Flash passando os PDFs reais codificados
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: contents, // Aqui vão os PDFs + a pergunta do usuário
+      config: {
+        systemInstruction: systemInstruction,
+      },
+    });
+
+    return NextResponse.json({ text: response.text });
+
+  } catch (error) {
+    console.error('Erro na API de Chat:', error);
+    return NextResponse.json({ error: 'Erro interno ao processar os PDFs ou chamar a IA.' }, { status: 500 });
+  }
+}
