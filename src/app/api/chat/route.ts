@@ -45,7 +45,7 @@ export async function POST(req: Request) {
     // Adiciona a pergunta atual do aluno no final do array de conteúdos
     contents.push(latestMessage);
 
-    // O prompt do sistema que molda o comportamento do robô
+    
     const systemInstruction = `
       Você é o Jus.ai, um assistente de inteligência artificial especializado em Direito Civil, treinado especificamente com os materiais de aula fornecidos em anexo.
       Seu público-alvo são estudantes de direito da mesma turma.
@@ -55,12 +55,14 @@ export async function POST(req: Request) {
       2. REQUISITO OBRIGATÓRIO: Ao responder ou explicar qualquer conceito, você DEVE citar de qual assunto ou slide do material você retirou a informação.
       3. Use formatação Markdown (negritos, listas, títulos) para que a resposta fique bonita e fácil de ler em um chatbox.
       4. Se o aluno fizer uma pergunta sobre algo que NÃO está nos PDFs anexados, responda com o seu conhecimento geral de Direito Civil, mas avise claramente: "(Nota: Este assunto específico não foi detalhado nos arquivos das aulas)".
+      5. O chatbox NUNCA irá inventar uma lei, apenas propagar os dados que o slide dará. Apenas caso o aluno peça. Nesses casos, o chat deixará explicito a invenção.
+      6. O chat deve priorizar os dados nativos dos PDFs. Caso impossível, dar dados OFICIAIS. Porém deixando explicito que não está referenciando dos arquivos.
     `;
 
-    // Chama o modelo Gemini 2.5 Flash passando os PDFs reais codificados
+    
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
-      contents: contents, // Aqui vão os PDFs + a pergunta do usuário
+      contents: contents, 
       config: {
         systemInstruction: systemInstruction,
       },

@@ -74,7 +74,6 @@ export default function Home() {
 
   return (
     <div className="flex h-screen bg-slate-50 text-slate-800 antialiased font-sans">
-      {/* Barra Lateral - Oculta no Mobile */}
       <aside className="w-64 bg-[#0B2545] text-slate-100 flex flex-col justify-between p-5 hidden md:flex">
         <div>
           <div className="flex items-center space-x-2 mb-8">
@@ -96,7 +95,7 @@ export default function Home() {
         </div>
       </aside>
 
-      {/* Área Principal */}
+      
       <main className="flex-1 flex flex-col h-full bg-white md:bg-slate-50">
         <header className="h-14 border-b border-slate-200 bg-white flex items-center justify-between px-6">
           <div className="flex items-center space-x-2">
@@ -110,7 +109,7 @@ export default function Home() {
           </div>
         </header>
 
-        {/* Lista de Mensagens */}
+        
         <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 max-w-3xl w-full mx-auto">
           {messages.map((msg) => (
             <div
@@ -129,14 +128,14 @@ export default function Home() {
                 {msg.role === 'user' ? (
                   <div className="whitespace-pre-line">{msg.content}</div>
                 ) : (
-                  /* Formatação Dinâmica de Linhas, Negritos e Listas sem dependências externas */
+                  
                   <div className="space-y-3 text-slate-800 whitespace-pre-line">
                     {msg.content.split('\n').map((paragraph, index) => {
-                      // Identifica se a linha é uma lista
+                      
                       const isListItem = paragraph.trim().startsWith('-') || paragraph.trim().startsWith('*');
                       const cleanParagraph = isListItem ? paragraph.replace(/^[-*]\s*/, '') : paragraph;
 
-                      // Destrincha os asteriscos (**) para aplicar negrito
+                      
                       const parts = cleanParagraph.split('**');
                       const formattedText = parts.map((part, i) => 
                         i % 2 === 1 ? <strong key={i} className="font-bold text-[#0B2545]">{part}</strong> : part
@@ -150,7 +149,7 @@ export default function Home() {
                         );
                       }
 
-                      // Identifica separadores como hífens contínuos
+                      
                       if (paragraph.trim().startsWith('---')) {
                         return <hr key={index} className="my-3 border-slate-200" />;
                       }
@@ -175,7 +174,7 @@ export default function Home() {
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Input */}
+        
         <footer className="p-4 bg-white border-t border-slate-200 md:bg-transparent md:border-t-0 max-w-3xl w-full mx-auto">
           <form onSubmit={handleSubmit} className="relative flex items-center">
             <input
@@ -197,7 +196,7 @@ export default function Home() {
             </button>
           </form>
           <p className="text-[10px] text-center text-slate-400 mt-2">
-            Desenvolvido por Vitor Hugo. Respostas baseadas no material fornecido em aula.
+            Desenvolvido por Vitor Hugo Ittner Fallgatter. Respostas baseadas no material fornecido em aula.
           </p>
         </footer>
       </main>
