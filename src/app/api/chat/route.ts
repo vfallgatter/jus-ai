@@ -3,7 +3,7 @@ import { GoogleGenAI } from '@google/genai';
 import fs from 'fs';
 import path from 'path';
 
-// Inicializa a API do Gemini
+
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 export async function POST(req: Request) {
@@ -11,7 +11,7 @@ export async function POST(req: Request) {
     const { messages } = await req.json();
     const latestMessage = messages[messages.length - 1].content;
 
-    // Caminho da pasta onde estão os PDFs das aulas
+    
     const pdfsDirectory = path.join(process.cwd(), 'aulas_pdf');
     
     if (!fs.existsSync(pdfsDirectory)) {
@@ -23,16 +23,16 @@ export async function POST(req: Request) {
 
     const filenames = fs.readdirSync(pdfsDirectory);
     
-    // Lista de conteúdos que vamos enviar para a API (Mensagem + Arquivos)
+    
     const contents: any[] = [];
 
-    // Loop para ler os PDFs e converter para o formato que o Gemini aceita nativamente (Inline Data)
+    
     for (const filename of filenames) {
       if (filename.endsWith('.pdf')) {
         const filePath = path.join(pdfsDirectory, filename);
         const dataBuffer = fs.readFileSync(filePath);
         
-        // Converte o arquivo PDF em Base64 para enviar direto na chamada da API
+        
         contents.push({
           inlineData: {
             data: dataBuffer.toString('base64'),
@@ -42,7 +42,7 @@ export async function POST(req: Request) {
       }
     }
 
-    // Adiciona a pergunta atual do aluno no final do array de conteúdos
+    
     contents.push(latestMessage);
 
     
